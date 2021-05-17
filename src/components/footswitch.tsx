@@ -2,46 +2,57 @@
 import { useState, MouseEvent } from "react"
 import { css } from "@emotion/react"
 import { SCLed } from "./led"
+import { Pedal } from "../data/data"
 
-interface FootswitchProps {
-  label: string
-  isStompBox?: boolean
-  hasNoLed?: boolean
-  isActive?: boolean
-  className?: string
-}
+type FootswitchProps =
+  | {
+      label: string
+      data: Pedal
+      isActive: boolean
+      toggleFootswitch: (index: number) => void
+    }
+  | {
+      label: string
+      data?: Pedal
+      isActive?: boolean
+      toggleFootswitch?: (index: number) => void
+    }
 
 const CFootswitch = ({
   label,
-  isStompBox = false,
-  isActive = false,
-  hasNoLed = false,
-  className,
+  data,
+  isActive,
+  toggleFootswitch,
 }: FootswitchProps): JSX.Element => {
-  const [isActiveState, setIsActiveState] = useState<boolean>(isActive)
-  const toggleIsActiveState = () => setIsActiveState(!isActiveState)
-
-  const [isPressedState, setIsPressedState] = useState<boolean>(false)
-  const toggleIsPressedState = () => {
-    setIsPressedState(!isPressedState)
+  const [isPressed, setPressed] = useState<boolean>(false)
+  const togglePressed = () => {
+    setPressed(!isPressed)
   }
 
   const preventContextMenu = (event: MouseEvent) => {
     event.preventDefault()
   }
 
+  const footswitchIndex = parseInt(label) - 1
+
+  const toggleActive = () => {
+    if (toggleFootswitch) {
+      toggleFootswitch(footswitchIndex)
+    }
+  }
+
   const sFootswitch = css`
     label: footswitch;
-    grid-area: footswitch${label};
+    grid-area: ${"footswitch" + label};
     position: relative;
     border: 1px solid #ccc;
     text-align: center;
     padding: 10px;
-    background-color: ${isPressedState ? "#222" : "#000"};
+    background-color: ${isPressed ? "#222" : "#000"};
     color: #fff;
     font-weight: bold;
     border-radius: 10px;
-    transform: ${isPressedState ? "scale(0.98)" : "none"};
+    transform: ${isPressed ? "scale(0.98)" : "none"};
     transition: background-color 0.2s;
 
     p {
@@ -58,7 +69,7 @@ const CFootswitch = ({
     label: footswitch__toggle;
     position: absolute;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
     height: 50%;
     right: 0;
@@ -75,34 +86,34 @@ const CFootswitch = ({
   `
 
   return (
-    <div css={sFootswitch} className={className}>
-      {hasNoLed ? undefined : <SCLed isActive={isActiveState} />}
+    <div css={sFootswitch}>
+      {data ? <SCLed isActive={!!isActive} /> : null}
       <p>{label}</p>
       <div
         css={sFootswitchToggle}
         onMouseDown={() => {
-          toggleIsActiveState()
-          toggleIsPressedState()
+          toggleActive()
+          togglePressed()
         }}
         onTouchStart={() => {
-          toggleIsActiveState()
-          toggleIsPressedState()
+          toggleActive()
+          togglePressed()
         }}
         onMouseUp={
-          isStompBox
-            ? toggleIsPressedState
+          data && data.isStompBox
+            ? togglePressed
             : () => {
-                toggleIsActiveState()
-                toggleIsPressedState()
+                toggleActive()
+                togglePressed()
               }
         }
         onTouchEnd={() => {
-          toggleIsActiveState()
-          toggleIsPressedState()
+          toggleActive()
+          togglePressed()
         }}
         onContextMenu={preventContextMenu}
       >
-        { isStompBox ? 'toggle' : 'press' }
+        {data && data.isStompBox ? "toggle" : "press"}
       </div>
     </div>
   )

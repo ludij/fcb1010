@@ -1,12 +1,42 @@
 /** @jsxImportSource @emotion/react */
-import "./App.css"
+import { useState } from "react"
 import { css } from "@emotion/react"
-import { SCHeader } from "./components/header"
 import { CFootswitch } from "./components/footswitch"
 import { CExpressionPedal } from "./components/expressionPedal"
+import { CModal } from "./components/modal"
+import "./App.css"
+import { data, Pedals } from "./data/data"
 
-function App() {
-  const container = css`
+interface AppProps {
+  modeIsPlay?: boolean
+  pedals?: Pedals
+}
+
+const App = ({ modeIsPlay = true, pedals = data }: AppProps): JSX.Element => {
+  const [modalIsVisible, setModalVisibility] = useState<boolean>(false)
+  const toggleModalVisibility = () => setModalVisibility(!modalIsVisible)
+
+  const getActiveFootswitches = () => {
+    const activeItems = []
+    for (let item of data) {
+      if (item.isActive) {
+        activeItems.push(data.indexOf(item))
+      }
+    }
+    return activeItems
+  }
+
+  const [activeFootswitches, setActiveFootswitches] = useState(getActiveFootswitches())
+  const toggleFootswitch = (index: number): void => {
+    if (activeFootswitches.includes(index)) {
+      setActiveFootswitches(activeFootswitches.filter((item) => item !== index))
+      return
+    }
+    setActiveFootswitches([...activeFootswitches, index])
+    return
+  }
+
+  const sContainer = css`
     label: container;
     display: grid;
     padding: 5px;
@@ -32,25 +62,41 @@ function App() {
     }
   `
 
+  const sHeader = css`
+    label: header;
+    padding: 10px;
+    grid-area: header;
+  `
+
+  const footswitchNumbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
   return (
-    <div css={container}>
-      <SCHeader>
+    <div css={sContainer}>
+      <div css={sHeader}>
         <h1>FCB1010</h1>
-      </SCHeader>
-      <CFootswitch label="6" />
-      <CFootswitch label="7" isStompBox={true} />
-      <CFootswitch label="8" isStompBox={true} />
-      <CFootswitch label="9" isStompBox={true} />
-      <CFootswitch label="10" isStompBox={true} />
-      <CFootswitch label="Up" hasNoLed={true} />
+        <button type="button" onClick={toggleModalVisibility}>
+          open modal
+        </button>
+      </div>
+      {footswitchNumbers.map((index: number) => {
+        return (
+          <CFootswitch
+            label={(index + 1).toString()}
+            data={pedals[index]}
+            isActive={activeFootswitches.includes(index)}
+            toggleFootswitch={toggleFootswitch}
+            key={"footswitch" + index}
+          />
+        )
+      })}
+      <CFootswitch label="Up" />
+      <CFootswitch label="Down" />
       <CExpressionPedal label="A" />
       <CExpressionPedal label="B" />
-      <CFootswitch label="1" />
-      <CFootswitch label="2" isStompBox={true} />
-      <CFootswitch label="3" isStompBox={true} />
-      <CFootswitch label="4" isStompBox={true} />
-      <CFootswitch label="5" isStompBox={true} />
-      <CFootswitch label="Down" hasNoLed={true} />
+      <CModal
+        isVisible={modalIsVisible}
+        toggleVisibility={toggleModalVisibility}
+      />
     </div>
   )
 }

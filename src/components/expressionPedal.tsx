@@ -4,34 +4,32 @@ import { css } from "@emotion/react"
 
 interface ExpressionPedalProps {
   label: string
-  className?: string
 }
 
 const CExpressionPedal = ({
   label,
-  className,
 }: ExpressionPedalProps): JSX.Element => {
-  const sliderContainerRef = useRef<HTMLDivElement>(null)
-  const sliderRef = useRef<HTMLInputElement>(null)
+  const sliderContainer = useRef<HTMLDivElement>(null)
+  const slider = useRef<HTMLInputElement>(null)
 
   const [sliderDimensions, setSliderDimensions] = useState<{
     width: string
     height: string
   }>({ width: "100%", height: "100%" })
 
-  const [isPressedState, setIsPressedState] = useState<boolean>(false)
-  const toggleIsPressedState = () => setIsPressedState(!isPressedState)
+  const [isPressed, setPressed] = useState<boolean>(false)
+  const togglePressed = () => setPressed(!isPressed)
 
   const preventContextMenu = (event: MouseEvent) => {
     event.preventDefault()
   }
 
   useEffect(() => {
-    const width = sliderContainerRef.current
-      ? sliderContainerRef.current.offsetHeight + "px"
+    const width = sliderContainer.current
+      ? sliderContainer.current.offsetHeight + "px"
       : "100%"
-    const height = sliderContainerRef.current
-      ? sliderContainerRef.current.offsetWidth + "px"
+    const height = sliderContainer.current
+      ? sliderContainer.current.offsetWidth + "px"
       : "100%"
     setSliderDimensions({ height, width })
   }, [])
@@ -41,11 +39,11 @@ const CExpressionPedal = ({
     border: 1px solid #ccc;
     grid-area: expressionPedal${label};
     text-align: center;
-    background-color: ${isPressedState ? "#222" : "#000"};
+    background-color: ${isPressed ? "#222" : "#000"};
     color: #fff;
     font-weight: bold;
     border-radius: 10px;
-    transform: ${isPressedState ? "scale(0.98)" : "none"};
+    transform: ${isPressed ? "scale(0.98)" : "none"};
     transition: background-color 0.2s;
     position: relative;
     padding: 10px 10px 10px calc(50% + 10px);
@@ -76,7 +74,7 @@ const CExpressionPedal = ({
     align-items: center;
     justify-content: center;
 
-    span {
+    label {
       position: absolute;
       bottom: 10px;
       user-select: none;
@@ -97,7 +95,7 @@ const CExpressionPedal = ({
   const sExpressionPedalSlider = css`
     label: expression-pedal__slider;
     cursor: pointer;
-    flex: 0 0 calc(${sliderDimensions.width} - 20px);
+    flex: 0 0 calc(${sliderDimensions.width} - 4px);
     height: ${sliderDimensions.height};
     transform: rotate(-90deg);
     appearance: none;
@@ -122,26 +120,27 @@ const CExpressionPedal = ({
   `
 
   return (
-    <div css={sExpressionPedal} className={className}>
+    <div css={sExpressionPedal}>
       <p>{label}</p>
 
       <div
         css={sExpressionPedalSliderContainer}
-        onMouseDown={toggleIsPressedState}
-        onTouchStart={toggleIsPressedState}
-        onMouseUp={toggleIsPressedState}
-        onTouchEnd={toggleIsPressedState}
+        onMouseDown={togglePressed}
+        onTouchStart={togglePressed}
+        onMouseUp={togglePressed}
+        onTouchEnd={togglePressed}
         onContextMenu={preventContextMenu}
-        ref={sliderContainerRef}
+        ref={sliderContainer}
       >
+        <label htmlFor="slide">slide</label>
         <input
           css={sExpressionPedalSlider}
+          name="slide"
           type="range"
           min="0"
           max="127"
-          ref={sliderRef}
+          ref={slider}
         />
-        <span>slide</span>
       </div>
     </div>
   )
