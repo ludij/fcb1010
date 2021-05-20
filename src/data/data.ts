@@ -88,25 +88,32 @@ const dataItem: Pedal = {
   },
 }
 
-const dataLoop = []
+const basicData: Pedals = Array.from({ length: 10 }, () => dataItem)
 
-for (let index = 0; index < 10; index++) {
-  const item = { ...dataItem }
-  item.label = index === 1 ? "Test label" : ""
-  item.isActive = index === 0 ? true : false
-  item.isStompBox = !!(index % 3)
-  item.controlChange = [
+const data: Pedals = basicData.map((item, index) => {
+  const extendedItem = {...item}
+  extendedItem.label = index === 1 ? "Test label" : item.label
+  extendedItem.isStompBox = !!(index % 3)
+  extendedItem.programChange =
+    index === 2
+      ? [
+          { isActive: true, programChange: 1 },
+          { isActive: false, programChange: 0 },
+          { isActive: false, programChange: 0 },
+          { isActive: false, programChange: 0 },
+          { isActive: false, programChange: 0 },
+        ]
+      : item.programChange
+  extendedItem.controlChange = [
     { isActive: true, controlChange: index, off: 0, on: 127 },
     { isActive: false, controlChange: 0, off: 0, on: 0 },
   ]
-  item.note = {
+  extendedItem.note = {
     isActive: true,
     note: 55 + index,
   }
-  dataLoop.push(item)
-}
-
-const data: Pedals = dataLoop
+  return extendedItem
+})
 
 export { data }
 export type { Pedal, Pedals }

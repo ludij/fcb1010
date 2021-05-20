@@ -6,10 +6,22 @@ import { CExpressionPedal } from "./components/expressionPedal"
 import { CModal } from "./components/modal"
 import "./App.css"
 import { data, Pedals } from "./data/data"
+import { Midi } from "./scripts/midi"
 
 interface AppProps {
   modeIsPlay?: boolean
   pedals?: Pedals
+}
+
+const midi = new Midi()
+let midiSuccess: boolean | Promise<boolean>
+let midiSupport: boolean
+if ("requestMIDIAccess" in navigator) {
+  midiSuccess = midi.init()
+  midiSupport = true
+} else {
+  midiSuccess = false
+  midiSupport = false
 }
 
 const App = ({ modeIsPlay = true, pedals = data }: AppProps): JSX.Element => {
@@ -17,23 +29,68 @@ const App = ({ modeIsPlay = true, pedals = data }: AppProps): JSX.Element => {
   const toggleModalVisibility = () => setModalVisibility(!modalIsVisible)
 
   const getActiveFootswitches = () => {
-    const activeItems = []
-    for (let item of data) {
-      if (item.isActive) {
-        activeItems.push(data.indexOf(item))
-      }
-    }
+    const activeItems = pedals
+      .filter((item) => item.isActive)
+      .map((item) => pedals.indexOf(item))
     return activeItems
   }
 
-  const [activeFootswitches, setActiveFootswitches] = useState(getActiveFootswitches())
+  const [activeFootswitches, setActiveFootswitches] = useState(
+    getActiveFootswitches()
+  )
+
   const toggleFootswitch = (index: number): void => {
     if (activeFootswitches.includes(index)) {
       setActiveFootswitches(activeFootswitches.filter((item) => item !== index))
+      sendMidi(index)
       return
     }
     setActiveFootswitches([...activeFootswitches, index])
+    if (midiSuccess) {
+      sendMidi(index, true)
+    }
     return
+  }
+
+  const sendMidi = (index: number, sendOn?: boolean) => {
+    const controlChanges = pedals[index].controlChange
+      .filter((item) => item.isActive)
+      .map((item) => {
+        return { controlChange: item.controlChange, on: item.on, off: item.off }
+      })
+    const note = pedals[index].note.isActive
+      ? pedals[index].note.note
+      : undefined
+    if (sendOn) {
+      // TODO: figure out why program change messages give an error
+      // const programChanges = pedals[index].programChange
+      //   .filter((item) => item.isActive)
+      //   .map((item) => item.programChange)
+      // for (const programChange of programChanges) {
+      //   midi.sendMidiMessage("programChange", programChange, 0)
+      // }
+      for (const controlChange of controlChanges) {
+        midi.sendMidiMessage(
+          "controlChange",
+          controlChange.controlChange,
+          controlChange.on
+        )
+      }
+      if (note) {
+        midi.sendMidiMessage("noteOn", note, 127)
+      }
+    } else {
+      for (const controlChange of controlChanges) {
+        midi.sendMidiMessage(
+          "controlChange",
+          controlChange.controlChange,
+          controlChange.off
+        )
+      }
+      if (note) {
+        midi.sendMidiMessage("noteOff", note, 127)
+      }
+    }
   }
 
   const sContainer = css`
@@ -68,12 +125,28 @@ const App = ({ modeIsPlay = true, pedals = data }: AppProps): JSX.Element => {
     grid-area: header;
   `
 
-  const footswitchNumbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  const sMidiState = css`
+    color: ${midiSuccess ? "green" : "red"};
+  `
+
+  const sMidiSupport = css`
+    color: red;
+  `
+
+  const footswitchNumbers = Array.from(Array(10).keys())
 
   return (
     <div css={sContainer}>
       <div css={sHeader}>
         <h1>FCB1010</h1>
+        <p css={sMidiState}>MIDI {midiSuccess ? "" : "dis"}connected</p>
+        <p css={sMidiSupport}>
+          {midiSuccess
+            ? null
+            : midiSupport
+            ? "Please allow your browser to use MIDI"
+            : "Your browser doesn't support MIDI, please use Chrome"}
+        </p>
         <button type="button" onClick={toggleModalVisibility}>
           open modal
         </button>
