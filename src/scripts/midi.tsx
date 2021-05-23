@@ -80,12 +80,11 @@ class Midi implements MidiBase {
     if (this.outputs) {
       const output = this.outputs.values().next().value
       const firstNibble = parseInt(this.messages[type] + this.midiChannel)
-      console.log("firstNibble", firstNibble)
-      // const dataNibbles = thirdNibble
-      //   ? [firstNibble, secondNibble, thirdNibble]
-      //   : [firstNibble, secondNibble]
-      const dataNibbles = [firstNibble, secondNibble, thirdNibble]
-      console.log("dataNibbles for", type, dataNibbles)
+      const dataNibbles =
+        type === "programChange"
+          ? [firstNibble, secondNibble]
+          : [firstNibble, secondNibble, thirdNibble]
+      // console.log('start midiMessage', type, dataNibbles, performance.now())
       output.send(dataNibbles)
     }
   }

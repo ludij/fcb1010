@@ -9,7 +9,6 @@ import { data, Pedals } from "./data/data"
 import { Midi } from "./scripts/midi"
 
 interface AppProps {
-  modeIsPlay?: boolean
   pedals?: Pedals
 }
 
@@ -24,7 +23,7 @@ if ("requestMIDIAccess" in navigator) {
   midiSupport = false
 }
 
-const App = ({ modeIsPlay = true, pedals = data }: AppProps): JSX.Element => {
+const App = ({ pedals = data }: AppProps): JSX.Element => {
   const [modalIsVisible, setModalVisibility] = useState<boolean>(false)
   const toggleModalVisibility = () => setModalVisibility(!modalIsVisible)
 
@@ -62,13 +61,12 @@ const App = ({ modeIsPlay = true, pedals = data }: AppProps): JSX.Element => {
       ? pedals[index].note.note
       : undefined
     if (sendOn) {
-      // TODO: figure out why program change messages give an error
-      // const programChanges = pedals[index].programChange
-      //   .filter((item) => item.isActive)
-      //   .map((item) => item.programChange)
-      // for (const programChange of programChanges) {
-      //   midi.sendMidiMessage("programChange", programChange, 0)
-      // }
+      const programChanges = pedals[index].programChange
+        .filter((item) => item.isActive)
+        .map((item) => item.programChange)
+      for (const programChange of programChanges) {
+        midi.sendMidiMessage("programChange", programChange, 0)
+      }
       for (const controlChange of controlChanges) {
         midi.sendMidiMessage(
           "controlChange",
