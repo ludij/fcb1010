@@ -1,3 +1,5 @@
+type Mode = "toggle" | "press"
+
 type ProgramChangeItem = {
   isActive: boolean
   programChange: number
@@ -32,9 +34,9 @@ type ExpressionPedal = {
   on: number
 }
 
-type Pedal = {
+interface Pedal {
   label: string
-  isStompBox: boolean
+  mode: Mode
   isActive: boolean
   programChange: ProgramChange
   controlChange: ControlChange
@@ -60,7 +62,7 @@ type Pedals = Pedal[]
 
 const dataItem: Pedal = {
   label: "",
-  isStompBox: false,
+  mode: "press",
   isActive: false,
   programChange: [
     { isActive: false, programChange: 0 },
@@ -91,9 +93,9 @@ const dataItem: Pedal = {
 const basicData: Pedals = Array.from({ length: 10 }, () => dataItem)
 
 const data: Pedals = basicData.map((item, index) => {
-  const extendedItem = {...item}
+  const extendedItem = { ...item }
   extendedItem.label = index === 1 ? "Test label" : item.label
-  extendedItem.isStompBox = !!(index % 3)
+  extendedItem.mode = index % 3 ? "toggle" : "press"
   extendedItem.programChange =
     index === 2
       ? [
@@ -115,5 +117,22 @@ const data: Pedals = basicData.map((item, index) => {
   return extendedItem
 })
 
+interface UpdatePedalsParams {
+  newValue: Pedal[keyof Pedal]
+  pedalsDataIndex: number
+  pedalsDataKey: keyof Pedal
+}
+
+type UpdatePedals = (params: UpdatePedalsParams) => void
+
 export { data }
-export type { Pedal, Pedals }
+export type {
+  Pedal,
+  Pedals,
+  UpdatePedalsParams,
+  UpdatePedals,
+  ProgramChange,
+  ControlChange,
+  Note,
+  ExpressionPedal,
+}

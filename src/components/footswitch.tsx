@@ -100,7 +100,7 @@ const CFootswitch = ({
           togglePressed()
         }}
         onMouseUp={
-          data && data.isStompBox
+          data && data.mode === "toggle"
             ? togglePressed
             : () => {
                 toggleActive()
@@ -113,7 +113,7 @@ const CFootswitch = ({
         }}
         onContextMenu={preventContextMenu}
       >
-        {data && data.isStompBox ? "toggle" : "press"}
+        {data && data.mode}
       </div>
     </div>
   )

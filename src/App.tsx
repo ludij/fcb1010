@@ -5,7 +5,7 @@ import { CFootswitch } from "./components/footswitch"
 import { CExpressionPedal } from "./components/expressionPedal"
 import { CModal } from "./components/modal"
 import "./App.css"
-import { data, Pedals } from "./data/data"
+import { data, Pedals, UpdatePedalsParams, UpdatePedals } from "./data/data"
 import { Midi } from "./scripts/midi"
 
 interface AppProps {
@@ -24,13 +24,28 @@ if ("requestMIDIAccess" in navigator) {
 }
 
 const App = ({ pedals = data }: AppProps): JSX.Element => {
+  const [pedalsData, setPedalsData] = useState<Pedals>(pedals)
+
+  const updatePedalsData: UpdatePedals = ({
+    newValue,
+    pedalsDataIndex,
+    pedalsDataKey,
+  }: UpdatePedalsParams) => {
+    const newPedalsData: Pedals = [...pedalsData]
+    newPedalsData[pedalsDataIndex] = {
+      ...newPedalsData[pedalsDataIndex],
+      [pedalsDataKey]: newValue,
+    }
+    setPedalsData(newPedalsData)
+  }
+
   const [modalIsVisible, setModalVisibility] = useState<boolean>(false)
   const toggleModalVisibility = () => setModalVisibility(!modalIsVisible)
 
   const getActiveFootswitches = () => {
-    const activeItems = pedals
+    const activeItems = pedalsData
       .filter((item) => item.isActive)
-      .map((item) => pedals.indexOf(item))
+      .map((item) => pedalsData.indexOf(item))
     return activeItems
   }
 
@@ -52,16 +67,16 @@ const App = ({ pedals = data }: AppProps): JSX.Element => {
   }
 
   const sendMidi = (index: number, sendOn?: boolean) => {
-    const controlChanges = pedals[index].controlChange
+    const controlChanges = pedalsData[index].controlChange
       .filter((item) => item.isActive)
       .map((item) => {
         return { controlChange: item.controlChange, on: item.on, off: item.off }
       })
-    const note = pedals[index].note.isActive
-      ? pedals[index].note.note
+    const note = pedalsData[index].note.isActive
+      ? pedalsData[index].note.note
       : undefined
     if (sendOn) {
-      const programChanges = pedals[index].programChange
+      const programChanges = pedalsData[index].programChange
         .filter((item) => item.isActive)
         .map((item) => item.programChange)
       for (const programChange of programChanges) {
@@ -146,14 +161,14 @@ const App = ({ pedals = data }: AppProps): JSX.Element => {
             : "Your browser doesn't support MIDI, please use Chrome"}
         </p>
         <button type="button" onClick={toggleModalVisibility}>
-          open modal
+          edit MIDI values
         </button>
       </div>
       {footswitchNumbers.map((index: number) => {
         return (
           <CFootswitch
             label={(index + 1).toString()}
-            data={pedals[index]}
+            data={pedalsData[index]}
             isActive={activeFootswitches.includes(index)}
             toggleFootswitch={toggleFootswitch}
             key={"footswitch" + index}
@@ -165,6 +180,8 @@ const App = ({ pedals = data }: AppProps): JSX.Element => {
       <CExpressionPedal label="A" />
       <CExpressionPedal label="B" />
       <CModal
+        data={pedalsData}
+        updateData={updatePedalsData}
         isVisible={modalIsVisible}
         toggleVisibility={toggleModalVisibility}
       />
