@@ -2,6 +2,8 @@
 
 Web simulation of the [Behringer FCB1010](https://www.behringer.com/product.html?modelCode=P0089) made with [React Hooks](https://reactjs.org/docs/hooks-intro.html), [Typescript](https://www.typescriptlang.org/), [Web MIDI API](https://www.w3.org/TR/webmidi/) and [Emotion](https://emotion.sh/). This is a work in progress repository, created to further familiarize myself with these technologies. As the Web MIDI API is not a W3C standard yet, the FCB1010 web app only works in Chrome, Opera and Android.
 
+See the web app live at: https://ludij.github.io/fcb1010/
+
 ## Getting Started
 
 ```

@@ -2,6 +2,7 @@
   "name": "fcb1010",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://ludij.github.io/fcb1010/",
   "dependencies": {
     "@testing-library/jest-dom": "^5.12.0",
     "@testing-library/react": "^11.2.6",
@@ -32,7 +33,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -55,6 +58,7 @@
   "devDependencies": {
     "@emotion/react": "^11.4.0",
     "@emotion/styled": "^11.3.0",
-    "@types/node": "^12.20.13"
+    "@types/node": "^12.20.13",
+    "gh-pages": "^3.2.0"
   }
 }
