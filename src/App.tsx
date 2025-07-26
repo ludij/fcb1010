@@ -1,30 +1,36 @@
 /** @jsxImportSource @emotion/react */
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { css } from "@emotion/react"
+// import styled from '@emotion/styled'
 import { CFootswitch } from "./components/footswitch"
 import { CExpressionPedal } from "./components/expressionPedal"
 import { CModal } from "./components/modal"
 import "./App.css"
-import { data, Pedals, UpdatePedalsParams, UpdatePedals } from "./data/data"
+import { initialData, Pedals, UpdatePedals, UpdatePedalsParams } from "./data/data"
 import { Midi } from "./scripts/midi"
+import { JSX } from '@emotion/react/jsx-runtime'
 
 interface AppProps {
   pedals?: Pedals
 }
 
+let midiSupport: boolean = false
 const midi = new Midi()
-let midiSuccess: boolean | Promise<boolean>
-let midiSupport: boolean
-if ("requestMIDIAccess" in navigator) {
-  midiSuccess = midi.init()
-  midiSupport = true
-} else {
-  midiSuccess = false
-  midiSupport = false
-}
 
-const App = ({ pedals = data }: AppProps): JSX.Element => {
+const App = ({ pedals = initialData }: AppProps): JSX.Element => {
   const [pedalsData, setPedalsData] = useState<Pedals>(pedals)
+
+  const [midiSuccess, setMidiSuccess] = useState<boolean>(false)
+
+  useEffect(() => {
+    if ("requestMIDIAccess" in navigator) {
+      midiSupport = true
+      midi.init().then((isSuccessful) => setMidiSuccess(isSuccessful));
+    } else {
+      midiSupport = false
+      console.log('NO MIDI')
+    }
+  }, []);
 
   const updatePedalsData: UpdatePedals = ({
     newValue,
@@ -56,14 +62,12 @@ const App = ({ pedals = data }: AppProps): JSX.Element => {
   const toggleFootswitch = (index: number): void => {
     if (activeFootswitches.includes(index)) {
       setActiveFootswitches(activeFootswitches.filter((item) => item !== index))
-      sendMidi(index)
-      return
+    } else {
+      setActiveFootswitches([...activeFootswitches, index])
     }
-    setActiveFootswitches([...activeFootswitches, index])
     if (midiSuccess) {
       sendMidi(index, true)
     }
-    return
   }
 
   const sendMidi = (index: number, sendOn?: boolean) => {
@@ -139,7 +143,7 @@ const App = ({ pedals = data }: AppProps): JSX.Element => {
   `
 
   const sMidiState = css`
-    color: ${midiSuccess ? "green" : "red"};
+    color: ${(midiSuccess) ? "green" : "red"};
   `
 
   const sMidiSupport = css`
@@ -158,7 +162,7 @@ const App = ({ pedals = data }: AppProps): JSX.Element => {
             ? null
             : midiSupport
             ? "Please allow your browser to use MIDI"
-            : "Your browser doesn't support MIDI, please use Chrome"}
+            : "Your browser doesn't seem to support MIDI, please use Chrome"}
         </p>
         <button type="button" onClick={toggleModalVisibility}>
           edit MIDI values

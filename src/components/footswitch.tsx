@@ -3,6 +3,7 @@ import { useState, MouseEvent } from "react"
 import { css } from "@emotion/react"
 import { SCLed } from "./led"
 import { Pedal } from "../data/data"
+import { JSX } from '@emotion/react/jsx-runtime'
 
 type FootswitchProps =
   | {
@@ -69,8 +70,9 @@ const CFootswitch = ({
     label: footswitch__toggle;
     position: absolute;
     display: flex;
-    align-items: flex-end;
+    flex-direction: column;
     justify-content: center;
+    gap: 5px;
     height: 50%;
     right: 0;
     left: 0;
@@ -80,7 +82,7 @@ const CFootswitch = ({
     background-color: rgba(255, 255, 255, 0.25);
     cursor: pointer;
     font-weight: normal;
-    font-size: 14px;
+    font-size: 10px;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
   `
@@ -113,7 +115,8 @@ const CFootswitch = ({
         }}
         onContextMenu={preventContextMenu}
       >
-        {data && data.mode}
+        <p>{data && data.mode}</p>
+        <p>{data && data.label}</p>
       </div>
     </div>
   )

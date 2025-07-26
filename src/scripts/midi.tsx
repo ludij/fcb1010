@@ -54,7 +54,7 @@ class Midi implements MidiBase {
   }
   init = (): Promise<boolean> => {
     return navigator
-      .requestMIDIAccess({ sysex: true })
+      .requestMIDIAccess({ sysex: true, software: false })
       .then(this.onSuccess, this.onFailure)
   }
   onSuccess = (midiAccess: WebMidi.MIDIAccess): boolean => {
@@ -80,12 +80,14 @@ class Midi implements MidiBase {
     if (this.outputs) {
       const output = this.outputs.values().next().value
       const firstNibble = parseInt(this.messages[type] + this.midiChannel)
-      const dataNibbles =
-        type === "programChange"
-          ? [firstNibble, secondNibble]
-          : [firstNibble, secondNibble, thirdNibble]
+      let dataNibbles: number[]
+      if (type !== "programChange" && thirdNibble !== undefined) {
+        dataNibbles = [firstNibble, secondNibble, thirdNibble]
+      } else {
+        dataNibbles = [firstNibble, secondNibble]
+      }
       // console.log('start midiMessage', type, dataNibbles, performance.now())
-      output.send(dataNibbles)
+      output?.send(dataNibbles)
     }
   }
 }

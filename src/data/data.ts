@@ -5,7 +5,7 @@ type ProgramChangeItem = {
   programChange: number
 }
 
-type ProgramChange = [
+export type ProgramChange = [
   ProgramChangeItem,
   ProgramChangeItem,
   ProgramChangeItem,
@@ -13,28 +13,28 @@ type ProgramChange = [
   ProgramChangeItem
 ]
 
-type ControlChangeItem = {
+export type ControlChangeItem = {
   isActive: boolean
   controlChange: number
   off: number
   on: number
 }
 
-type ControlChange = [ControlChangeItem, ControlChangeItem]
+export type ControlChange = [ControlChangeItem, ControlChangeItem]
 
-type Note = {
+export type Note = {
   isActive: boolean
   note: number
 }
 
-type ExpressionPedal = {
+export type ExpressionPedal = {
   isActive: boolean
   controlChange: number
   off: number
   on: number
 }
 
-interface Pedal {
+export interface Pedal {
   label: string
   mode: Mode
   isActive: boolean
@@ -45,20 +45,7 @@ interface Pedal {
   expressionPedalB: ExpressionPedal
 }
 
-// TODO: decide whether Pedals should be of type `tuple` or `array`
-// type Pedals = [
-//   Pedal,
-//   Pedal,
-//   Pedal,
-//   Pedal,
-//   Pedal,
-//   Pedal,
-//   Pedal,
-//   Pedal,
-//   Pedal,
-//   Pedal
-// ]
-type Pedals = Pedal[]
+export type Pedals = Pedal[]
 
 const dataItem: Pedal = {
   label: "",
@@ -90,21 +77,19 @@ const dataItem: Pedal = {
   },
 }
 
-const basicData: Pedals = Array.from({ length: 10 }, () => dataItem)
-
-const data: Pedals = basicData.map((item, index) => {
+export const initialData: Pedals = Array.from({ length: 10 }, () => dataItem).map((item, index) => {
   const extendedItem = { ...item }
   extendedItem.label = index === 1 ? "Test label" : item.label
   extendedItem.mode = index % 3 ? "toggle" : "press"
   extendedItem.programChange =
     index === 2
       ? [
-          { isActive: true, programChange: 1 },
-          { isActive: false, programChange: 0 },
-          { isActive: false, programChange: 0 },
-          { isActive: false, programChange: 0 },
-          { isActive: false, programChange: 0 },
-        ]
+        { isActive: true, programChange: 1 },
+        { isActive: false, programChange: 0 },
+        { isActive: false, programChange: 0 },
+        { isActive: false, programChange: 0 },
+        { isActive: false, programChange: 0 },
+      ]
       : item.programChange
   extendedItem.controlChange = [
     { isActive: true, controlChange: index, off: 0, on: 127 },
@@ -117,22 +102,10 @@ const data: Pedals = basicData.map((item, index) => {
   return extendedItem
 })
 
-interface UpdatePedalsParams {
+export interface UpdatePedalsParams {
   newValue: Pedal[keyof Pedal]
   pedalsDataIndex: number
   pedalsDataKey: keyof Pedal
 }
 
-type UpdatePedals = (params: UpdatePedalsParams) => void
-
-export { data }
-export type {
-  Pedal,
-  Pedals,
-  UpdatePedalsParams,
-  UpdatePedals,
-  ProgramChange,
-  ControlChange,
-  Note,
-  ExpressionPedal,
-}
+export type UpdatePedals = (params: UpdatePedalsParams) => void

@@ -1,6 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { useRef, useState, MouseEvent, useEffect } from "react"
 import { css } from "@emotion/react"
+import { JSX } from '@emotion/react/jsx-runtime'
 
 interface ExpressionPedalProps {
   label: string

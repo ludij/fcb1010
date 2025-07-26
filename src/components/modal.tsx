@@ -9,6 +9,7 @@ import {
   Note,
   ExpressionPedal,
 } from "../data/data"
+import { JSX } from '@emotion/react/jsx-runtime'
 
 interface ModalProps {
   data: Pedals
