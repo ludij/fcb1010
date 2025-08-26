@@ -13,12 +13,12 @@ $ npm start
 
 ## Feature list
 
-- [x] Create virtual FCB1010 surface
-- [x] Implement MIDI Web API
-- [x] Give pedals two modes: toggle and press
-- [x] Make it possible to edit which MIDI messages the pedals send
-- [ ] Add expression pedals functionality
-- [ ] Style the edit modal and input fields
-- [ ] Handle keyboard input, so it can be used to trigger the pedals
-- [ ] Translate app state to a sysex message to send it to a hardware Behringer FCB1010
-- [ ] Handle MIDI input and make it possible to import sysex messages
+-   [x] Create virtual FCB1010 surface
+-   [x] Implement MIDI Web API
+-   [x] Give pedals two modes: toggle and momentary
+-   [x] Make it possible to edit which MIDI messages the pedals send
+-   [x] Handle keyboard input, so it can be used to trigger the pedals
+-   [ ] Add expression pedals functionality
+-   [ ] Style the edit modal and input fields
+-   [ ] Translate app state to a sysex message to send it to a hardware Behringer FCB1010
+-   [ ] Handle MIDI input and make it possible to import sysex messages
