@@ -1,3 +1,5 @@
+import { Pedal } from '../data/data';
+
 export interface Messages {
     noteOn: string;
     noteOff: string;
@@ -20,31 +22,12 @@ interface MidiBase {
 class Midi implements MidiBase {
     inputs: WebMidi.MIDIInputMap | null = null;
     outputs: WebMidi.MIDIOutputMap | null = null;
-    inputKeys: { [key: string]: number | string };
     initWasSuccessful: boolean;
     messages: Messages;
     midiChannel: number = 0;
 
     constructor() {
         this.initWasSuccessful = false;
-        this.inputKeys = {
-            a: 0,
-            s: 1,
-            d: 2,
-            f: 3,
-            g: 4,
-            w: 5,
-            e: 6,
-            r: 7,
-            t: 8,
-            y: 9,
-            j: 'down',
-            u: 'up',
-            i: 'aUp',
-            k: 'aDown',
-            o: 'bUp',
-            l: 'bDown',
-        };
         this.messages = {
             noteOff: '0x8',
             noteOn: '0x9',
@@ -88,8 +71,50 @@ class Midi implements MidiBase {
             } else {
                 dataNibbles = [firstNibble, secondNibble];
             }
-            // console.log('start midiMessage', type, dataNibbles, performance.now())
+            console.log(
+                'start midiMessage',
+                type,
+                dataNibbles,
+                performance.now()
+            );
             output?.send(dataNibbles);
+        }
+    };
+    sendMidiForFootswitchPedal = (item: Pedal, sendOff?: boolean) => {
+        const note = item.note.isActive ? item.note.note : undefined;
+        if (sendOff) {
+            item.controlChange
+                .filter((item) => item.isActive)
+                .forEach((controlChange) => {
+                    this.sendMidiMessage(
+                        'controlChange',
+                        controlChange.controlChange,
+                        controlChange.off
+                    );
+                });
+            if (note) {
+                this.sendMidiMessage('noteOff', note, 127);
+            }
+            return;
+        }
+        item.programChange
+            .filter((item) => item.isActive)
+            .map((item) => item.programChange)
+            .forEach((programChange) => {
+                this.sendMidiMessage('programChange', programChange, 0);
+            });
+
+        item.controlChange
+            .filter((item) => item.isActive)
+            .forEach((controlChange) => {
+                this.sendMidiMessage(
+                    'controlChange',
+                    controlChange.controlChange,
+                    controlChange.on
+                );
+            });
+        if (note) {
+            this.sendMidiMessage('noteOn', note, 127);
         }
     };
 }

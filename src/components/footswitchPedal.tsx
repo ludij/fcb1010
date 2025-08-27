@@ -2,41 +2,34 @@
 import { css } from '@emotion/react';
 import { JSX } from '@emotion/react/jsx-runtime';
 import { SCLed } from './led';
-import { Pedal } from '../data/data';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { MidiMessagesContext } from '../hooks/midiMessagesContext';
 
 type FootswitchProps = {
     index: number;
-    data: Pedal;
-    isActive: boolean;
-    toggleFootswitch: (index: number) => void;
 };
 
-const CFootswitchPedal = ({
-    index,
-    data,
-    isActive,
-    toggleFootswitch,
-}: FootswitchProps): JSX.Element => {
-    const label: string = (index + 1).toString();
+const CFootswitchPedal = ({ index }: FootswitchProps): JSX.Element => {
+    const { state, midiApi } = useContext(MidiMessagesContext);
+
+    const [isActive, setIsActive] = useState(false);
+    const { label, mode, shortcutKey } = state[index];
+
+    const headerLabel: string = (index + 1).toString();
 
     const [isPedalDown, setIsPedalDown] = useState<boolean>(false);
 
-    const toggleActive = () => {
-        if (toggleFootswitch) {
-            toggleFootswitch(index);
-        }
-    };
-
     const onPedalDown = () => {
         setIsPedalDown(true);
-        toggleActive();
+        midiApi?.sendMidiForFootswitchPedal(state[index], isActive);
+        setIsActive(!isActive);
     };
 
     const onPedalUp = () => {
-        if (data.mode === 'momentary') {
-            toggleActive();
+        if (mode === 'momentary') {
+            setIsActive(!isActive);
+            midiApi?.sendMidiForFootswitchPedal(state[index], isActive);
         }
         setIsPedalDown(false);
     };
@@ -46,14 +39,14 @@ const CFootswitchPedal = ({
     };
 
     useKeyboardShortcuts({
-        key: data.shortcutKey,
+        key: shortcutKey,
         onKeyDownHandler: onPedalDown,
         onKeyUpHandler: onPedalUp,
     });
 
     const footswitchContainerStyles = css`
         label: footswitch-container;
-        grid-area: ${'footswitch-' + label.toLowerCase()};
+        grid-area: ${'footswitch-' + headerLabel.toLowerCase()};
         aspect-ratio: 1/2;
         width: 100%;
         position: relative;
@@ -146,14 +139,12 @@ const CFootswitchPedal = ({
                     <div css={footswitchHeaderTopLeftStyles}>
                         <SCLed isActive={isActive || false} />
                     </div>
-                    <div css={footswitchHeaderBottomStyles}>{label}</div>
+                    <div css={footswitchHeaderBottomStyles}>{headerLabel}</div>
                 </div>
 
-                {!!data.label && (
-                    <div css={footswitchLabelStyles}>{data.label}</div>
-                )}
-                {data.mode === 'toggle' && (
-                    <div css={footswitchLabelStyles}>{data.mode}</div>
+                {!!label && <div css={footswitchLabelStyles}>{label}</div>}
+                {mode === 'toggle' && (
+                    <div css={footswitchLabelStyles}>{mode}</div>
                 )}
             </div>
         </div>

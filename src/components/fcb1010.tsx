@@ -1,123 +1,23 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import { JSX } from '@emotion/react/jsx-runtime';
-import {
-    INITIAL_PEDALS_DATA,
-    Pedals,
-    UpdatePedals,
-    UpdatePedalsParams,
-} from '../data/data';
-import { useState } from 'react';
-import { Messages } from '../scripts/midi';
+import { Fragment, useContext, useState } from 'react';
 import { CExpressionPedal } from './expressionPedal';
 import { CModal } from './modal';
 import { CFootswitchPedal } from './footswitchPedal';
 import { CBankPedal } from './bankPedal';
-import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { MidiMessagesContext } from '../hooks/midiMessagesContext';
 
-const CFcb1010 = ({
-    midiSuccess,
-    sendMidiMessage,
-}: {
-    midiSuccess: boolean;
-    sendMidiMessage: (
-        type: keyof Messages,
-        secondNibble: number,
-        thirdNibble?: number
-    ) => void;
-}): JSX.Element => {
+const CFcb1010 = (): JSX.Element => {
     const [modalIsVisible, setModalVisibility] = useState<boolean>(false);
 
     const toggleModalVisibility = () => setModalVisibility(!modalIsVisible);
 
-    const [pedalsData, setPedalsData] = useState<Pedals>(INITIAL_PEDALS_DATA);
-
-    const updatePedalsData: UpdatePedals = ({
-        newValue,
-        pedalsDataIndex,
-        pedalsDataKey,
-    }: UpdatePedalsParams) => {
-        const newPedalsData: Pedals = [...pedalsData];
-        newPedalsData[pedalsDataIndex] = {
-            ...newPedalsData[pedalsDataIndex],
-            [pedalsDataKey]: newValue,
-        };
-        setPedalsData(newPedalsData);
-    };
-
-    const getActiveFootswitches = () => {
-        const activeItems = pedalsData
-            .filter((item) => item.isActive)
-            .map((item) => pedalsData.indexOf(item));
-        return activeItems;
-    };
-
-    const [activeFootswitches, setActiveFootswitches] = useState(
-        getActiveFootswitches()
-    );
-
-    const toggleFootswitch = (index: number): void => {
-        let sendOn = true;
-        if (activeFootswitches.includes(index)) {
-            setActiveFootswitches(
-                activeFootswitches.filter((item) => item !== index)
-            );
-            sendOn = false;
-        } else {
-            setActiveFootswitches([...activeFootswitches, index]);
-        }
-        if (midiSuccess) {
-            sendMidi(index, sendOn);
-        }
-    };
+    const { state, updatePedalsData } = useContext(MidiMessagesContext);
 
     const toggleBank = (payload: -1 | 1): void => {
         console.log('toggleBank', payload);
         // TODO
-    };
-
-    const sendMidi = (index: number, sendOn?: boolean) => {
-        const controlChanges = pedalsData[index].controlChange
-            .filter((item) => item.isActive)
-            .map((item) => {
-                return {
-                    controlChange: item.controlChange,
-                    on: item.on,
-                    off: item.off,
-                };
-            });
-        const note = pedalsData[index].note.isActive
-            ? pedalsData[index].note.note
-            : undefined;
-        if (sendOn) {
-            const programChanges = pedalsData[index].programChange
-                .filter((item) => item.isActive)
-                .map((item) => item.programChange);
-            for (const programChange of programChanges) {
-                sendMidiMessage('programChange', programChange, 0);
-            }
-            for (const controlChange of controlChanges) {
-                sendMidiMessage(
-                    'controlChange',
-                    controlChange.controlChange,
-                    controlChange.on
-                );
-            }
-            if (note) {
-                sendMidiMessage('noteOn', note, 127);
-            }
-        } else {
-            for (const controlChange of controlChanges) {
-                sendMidiMessage(
-                    'controlChange',
-                    controlChange.controlChange,
-                    controlChange.off
-                );
-            }
-            if (note) {
-                sendMidiMessage('noteOff', note, 127);
-            }
-        }
     };
 
     const boardStyles = css`
@@ -136,7 +36,7 @@ const CFcb1010 = ({
     const footswitchNumbers = Array.from(Array(10).keys());
 
     return (
-        <div>
+        <Fragment>
             <h1>FCB1010 Editor/Simulator</h1>
             <button type="button" onClick={toggleModalVisibility}>
                 edit MIDI values
@@ -146,9 +46,6 @@ const CFcb1010 = ({
                     return (
                         <CFootswitchPedal
                             index={index}
-                            data={pedalsData[index]}
-                            isActive={activeFootswitches.includes(index)}
-                            toggleFootswitch={toggleFootswitch}
                             key={'footswitch' + index}
                         />
                     );
@@ -158,13 +55,13 @@ const CFcb1010 = ({
                 <CExpressionPedal label="A" />
                 <CExpressionPedal label="B" />
                 <CModal
-                    data={pedalsData}
+                    data={state}
                     updateData={updatePedalsData}
                     isVisible={modalIsVisible}
                     toggleVisibility={toggleModalVisibility}
                 />
             </div>
-        </div>
+        </Fragment>
     );
 };
 

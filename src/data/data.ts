@@ -35,10 +35,10 @@ export type ExpressionPedal = {
 };
 
 export interface Pedal {
+  uuid: string;
   label: string;
   shortcutKey: string;
   mode: Mode;
-  isActive: boolean;
   programChange: ProgramChange;
   controlChange: ControlChange;
   note: Note;
@@ -63,10 +63,10 @@ export interface UseKeyboardShortcuts {
 }
 
 const PEDAL_DATA_ITEM: Pedal = {
+  uuid: '',
   label: '',
   shortcutKey: '',
   mode: 'momentary',
-  isActive: false,
   programChange: [
     { isActive: false, programChange: 0 },
     { isActive: false, programChange: 0 },
@@ -98,6 +98,7 @@ export const INITIAL_PEDALS_DATA: Pedals = Array.from(
   () => PEDAL_DATA_ITEM,
 ).map((item, index) => {
   const extendedItem = { ...item };
+  extendedItem.uuid = crypto.randomUUID();
   extendedItem.label = index === 1 ? "Test label" : item.label;
   extendedItem.shortcutKey = index === 9 ? '0' : (index + 1).toString();
   extendedItem.mode = index % 3 ? "toggle" : "momentary";
